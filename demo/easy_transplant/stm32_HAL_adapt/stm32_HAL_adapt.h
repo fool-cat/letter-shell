@@ -1,7 +1,7 @@
 /**
  * @file stm32_HAL_adapt.h
  * @author fool_dog (2696652257@qq.com)
- * @brief // 裸机的对接方式
+ * @brief // 裸机与FreeRTOS的对接方式
  * @version 1.0
  * @date 2024-08-08
  *
@@ -9,19 +9,24 @@
  *
  */
 
+// > 单次包含宏定义
+#ifndef _STM32_HAL_ADAPT_H_
+#define _STM32_HAL_ADAPT_H_
+
 #include "cmsis_compiler.h"
 #include "usart.h"
-#include "dma.h"
 
 // 接收发送方式,不使用阻塞式发送接收,有RTOS可以考虑阻塞发送(可以但没必要),发送和接收的方式是可以组合使用的需自行更改
 #define PLATFORM_MODE_DMA 0 // 使用DMA发送与接收
 #define PLATFORM_MODE_IT 1  // 使用中断发送与接收
 // #define PLATFORM_MODE_POLL 2 // 使用轮询发送与接收(阻塞)
+
 // 使用DMA发送与接收
 #define PLATFORM_MODE PLATFORM_MODE_DMA
 
 #define RTOS_NONE 0     // 无操作系统
 #define RTOS_FREERTOS 1 // 使用FreeRTOS
+
 // 定义使用的操作系统
 #define RTOS_MODE RTOS_NONE // 未使用操作系统
 
@@ -39,6 +44,7 @@
 // clang-format off
 
 #if (PLATFORM_MODE == PLATFORM_MODE_DMA)
+#include "dma.h"
     extern HAL_StatusTypeDef HAL_UART_Transmit_DMA(UART_HandleTypeDef *huart, const uint8_t *pData, uint16_t Size);
     extern HAL_StatusTypeDef HAL_UARTEx_ReceiveToIdle_DMA(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size);
     #define PLATFORM_TX_WRAP(buffer, len) HAL_UART_Transmit_DMA(SHELL_UART_ADDR, (uint8_t *)buffer, len)
@@ -63,3 +69,5 @@
  */
 extern uint32_t HAL_GetTick(void);
 #define SHELL_GET_TICK() HAL_GetTick()
+
+#endif //\ _STM32_HAL_ADAPT_H_

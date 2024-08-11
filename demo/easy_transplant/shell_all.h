@@ -16,6 +16,7 @@
 #define __SHELL_ALL_H_
 
 //> 平台适配的头文件必须放在最前面,确保宏定义的预处理定义正确
+//> 如果有自己的实现请替换为对应自己的头文件
 #include "./stm32_HAL_adapt/stm32_HAL_adapt.h"
 
 #include "shell_cfg_user.h" // 使用本文件目录下的自定义配置文件
@@ -29,7 +30,14 @@
 #define SHELL_RX_CONTINUOUSLY 1 // 使能连续接收(end中继续检测是否还有空间可以接收)
 
 // shell 写入溢出的时候可以调用钩子函数进行一些处理
-#define WRITE_OVER_FLOW_HOOK() (void)0
+#ifndef WRITE_OVER_FLOW_HOOK
+#define WRITE_OVER_FLOW_HOOK(data, len_written, len_lose) (void)0
+#endif
+
+#if !defined(PLATFORM_TX_WRAP) || !defined(PLATFORM_RX_WRAP)
+#error "请实现自己的接收与发送函数对接"
+#error "please implement your own receive and send function docking"
+#endif
 
 // > C/C++兼容性宏定义
 #ifdef __cplusplus

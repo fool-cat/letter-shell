@@ -83,7 +83,7 @@ short write_to_ringbuffer(char *data, unsigned short len)
             if (!SHELL_WRITE_CAN_BLOCK())
             {
                 total_written += ret;
-                WRITE_OVER_FLOW_HOOK();
+                WRITE_OVER_FLOW_HOOK((char *)data - total_written, total_written, len);
                 break; // 如果在中断中,直接退出,未写入的数据直接丢弃,避免长时间占用中断
             }
 
