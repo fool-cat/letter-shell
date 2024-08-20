@@ -17,24 +17,36 @@
 #include "usart.h"
 
 // 接收发送方式,不使用阻塞式发送接收,有RTOS可以考虑阻塞发送(可以但没必要),发送和接收的方式是可以组合使用的需自行更改
-#define PLATFORM_MODE_DMA 0 // 使用DMA发送与接收
-#define PLATFORM_MODE_IT 1  // 使用中断发送与接收
-// #define PLATFORM_MODE_POLL 2 // 使用轮询发送与接收(阻塞)
-
+enum PLATFORM_MODE_t
+{
+    PLATFORM_MODE_DMA = 0,
+    PLATFORM_MODE_IT,
+    PLATFORM_MODE_POLL
+};
 // 使用DMA发送与接收
 #define PLATFORM_MODE PLATFORM_MODE_DMA
 
-#define RTOS_NONE 0     // 无操作系统
-#define RTOS_FREERTOS 1 // 使用FreeRTOS
-
+enum RTOS_TYPE_t
+{
+    RTOS_NONE = 0, // 无操作系统
+    RTOS_FREERTOS, // FreeRTOS
+    // ... 其他操作系统
+};
 // 定义使用的操作系统
-#define RTOS_MODE RTOS_NONE // 未使用操作系统
+#define RTOS_MODE RTOS_NONE
 
 //+********************************* 必须对接的宏 **********************************/
 // 写入是否可以阻塞的判断函数,通常不在中断中就可以阻塞
 #define SHELL_WRITE_CAN_BLOCK() (__get_IPSR() == 0)
 
+#if (RTOS_MODE == RTOS_NONE)
 #define WAIT_A_MOMENT() HAL_Delay(1) // 等待一段时间,外设跟不上内核填充的速度
+#elif (RTOS_MODE == RTOS_FREERTOS)
+#define WAIT_A_MOMENT() vTaskDelay(1)
+#else
+#warning "请实现自己的等待函数"
+#warning "please implement your own wait function"
+#endif
 
 // 原子操作保证数据的完整性,支持嵌套更好
 #define SHELL_ATOMIC_ENTER() __disable_irq()

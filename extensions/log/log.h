@@ -131,6 +131,14 @@ typedef struct log_def
 #define logPrintln(format, ...) \
         logWrite(LOG_ALL_OBJ, LOG_NONE, format "\r\n", ##__VA_ARGS__)
 
+/**
+ * @brief log打印(不换行),用于直接替换printf
+ *
+ * @param fmt 格式
+ * @param ... 参数
+ */
+#define logPrint(format, ...) \
+        logWrite(LOG_ALL_OBJ, LOG_NONE, format, ##__VA_ARGS__)
 
 /**
  * @brief 日志格式化输出

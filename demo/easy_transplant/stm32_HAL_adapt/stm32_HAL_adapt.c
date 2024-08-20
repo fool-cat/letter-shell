@@ -82,8 +82,7 @@ void log_unlock(struct log_def *log)
 // shell使用的硬件初始化,使用cubemx开启串口,然后使能对应的串口中断,DMA发送与接收中断
 void user_init_before_shell()
 {
-    // 由于初始化已经由CUBEMX处理好了,这里什么都不需要做,建议关闭DMA接收半满中断
-    // __HAL_DMA_DISABLE_IT(SHELL_UART_ADDR, DMA_IT_HT);
+    // 由于初始化已经由CUBEMX处理好了,这里什么都不需要做,建议开启DMA半满中断(默认开启)
 
 #if (RTOS_MODE == RTOS_FREERTOS)
     _shell_mutex = xSemaphoreCreateMutex();
