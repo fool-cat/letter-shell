@@ -137,7 +137,7 @@ typedef struct log_def
  * @param fmt 格式
  * @param ... 参数
  */
-#define logPrint(format, ...) \
+#define logPrintf(format, ...) \
         logWrite(LOG_ALL_OBJ, LOG_NONE, format, ##__VA_ARGS__)
 
 /**
