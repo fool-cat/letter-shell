@@ -47,6 +47,8 @@ extern "C"
 
     //+******************************** C scope ***************************************/
 
+#include "./ringbuffer/ringbuffer.h" // 环形队列
+
 #include "../../src/shell.h"
 
 // shell核心头文件
@@ -73,9 +75,11 @@ extern "C"
 
     void port_tx_trigger(void);            // 触发发送,定期调用
     void port_tx_end(short truely_tx_len); // 实际发送完后一定要调用,发送中断中调用(如果有的话),end函数如果传入负数表示使用上次调用时候记录的值
+    int port_tx_available(void);           // 获取发送缓冲区已有的数据量
 
     void port_rx_trigger(void);            // 触发接收,定期调用
     void port_rx_end(short truely_rx_len); // 实际接收完后一定要调用,接收中断中调用(如果有的话),end函数如果传入负数表示使用上次调用时候记录的值
+    int port_rx_available(void);           // 获取接收缓冲区已有的数据量,可以根据此函数判断是否需要调用shell任务,对于RTOS可以在无数据时释放CPU
 
     // 初始化shell和log
     void letter_shell_init(void);

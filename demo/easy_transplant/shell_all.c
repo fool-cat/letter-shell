@@ -208,6 +208,15 @@ void port_rx_end(short truely_rx_len)
 #endif
 }
 
+int port_tx_available(void)
+{
+    return ringbuffer_get_used(&rb_tx);
+}
+
+int port_rx_available(void)
+{
+    return ringbuffer_get_used(&rb_rx);
+}
 //+******************************** shell和log组件初始化,shell任务 ***************************************/
 // 锁函数需要在对应的适配文件中实现
 // shell 锁实现函数
