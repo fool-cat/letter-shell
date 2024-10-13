@@ -294,6 +294,20 @@ void letter_shell_task()
 #endif
 }
 
+int shell_printf(const char *format, ...)
+{
+    int len = 0;
+    char buf[SHELL_TX_BUFFER_SIZE];
+    va_list args;
+    va_start(args, format);
+    len = vsnprintf(buf, sizeof(buf), format, args);
+    va_end(args);
+
+    shellWriteEndLine(&user_shell, buf, strlen(buf));
+
+    return len;
+}
+
 //+********************************* 导出一些可能用到的命令或快捷键 **********************************/
 static void logChangeLevel()
 {

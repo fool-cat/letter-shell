@@ -87,6 +87,9 @@ extern "C"
     // shell任务
     void letter_shell_task();
 
+    // shell尾随printf用于代替标准库的printf
+    int shell_printf(const char *format, ...);
+
 #ifdef __cplusplus
 }
 //+******************************** c++ scope ***************************************/
