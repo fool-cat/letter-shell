@@ -2,7 +2,7 @@
 
 此目录文件为通用 letter-shell 移植的实例,目前仅提供了STM32 HAL库的适配文件
 
-## 使用(以STM32 HAL库串口1 DMA适配为例)--AC6编译
+## 使用(以STM32 HAL库串口1 DMA适配为例)--AC6编译--AC5编译器已完善支持
 
 在cubemx中开启串口,并且开启串口中断,添加串口的DMA发送和接收,DMA模式选择常规模式------其他时钟,调试接口之类的配置请自行配置
 
@@ -12,9 +12,9 @@
 
 此处以keil为例
 
-1. 将keil编译器切换为AC6,AC5太老了编译又慢,一定要选用AC5导致的编译报错请自行解决
-2. 将此文件夹下shell_all.c和stm32_HAL_adapt文件夹下stm32_HAL_adapt.c添加编译
-3. 将shell根目录下src文件夹和extensions/shell_enhance和shell_all.h所在文件夹添加头文件包含
+~~ 将keil编译器切换为AC6,AC5太老了编译又慢,一定要选用AC5导致的编译报错请自行解决 ~~ 已完善AC5编译器支持
+1. 将此文件夹下shell_all.c和stm32_HAL_adapt文件夹下stm32_HAL_adapt.c添加编译
+2. 将shell根目录下src文件夹和extensions/shell_enhance和shell_all.h所在文件夹添加头文件包含
 
 ![1723216984202](image/readme/1723216984202.png)
 

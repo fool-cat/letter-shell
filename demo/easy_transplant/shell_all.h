@@ -85,10 +85,14 @@ extern "C"
     void letter_shell_init(void);
 
     // shell任务
-    void letter_shell_task();
+    void letter_shell_task(void);
 
-    // shell尾随printf用于代替标准库的printf
+#define USE_SHELL_PRINTF 1
+#if USE_SHELL_PRINTF
+    // shell尾随printf用于代替标准库的printf,shell_printf使用xprintf的格式化输出,以源码形式添加编译
     int shell_printf(const char *format, ...);
+#define SHELL_PRINTF
+#endif
 
 #ifdef __cplusplus
 }

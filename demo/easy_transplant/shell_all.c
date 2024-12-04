@@ -7,8 +7,6 @@
 
 #if 1
 
-#include "./ringbuffer/ringbuffer.c" // 环形队列
-
 // shell核心实现包含
 #include "../../src/shell.c"
 #include "../../src/shell_ext.c"
@@ -58,6 +56,22 @@ static ringbuffer_t rb_tx;
 #ifndef SHELL_WRITE_CAN_BLOCK
 #define SHELL_WRITE_CAN_BLOCK() (false)
 #endif // !SHELL_WRITE_CAN_BLOCK
+
+#undef USER_ASSERT
+#define USER_ASSERT(exp) (void)0 // 开启此宏关闭此文件用户自定义断言
+
+// clang-format off
+#ifndef USER_ASSERT
+    #include <stdio.h>
+    #define USER_ASSERT(exp)                                                          \
+        if (!(exp))                                                                         \
+        {                                                                                   \
+            printf("\"" #exp "\" assert failed at file: %s, line: %d", __FILE__, __LINE__); \
+            for (;;)                                                                        \
+                ;                                                                           \
+        }
+#endif // ! USER_ASSERT
+// clang-format on
 
 //+********************************* shell读写对接 **********************************/
 
@@ -227,7 +241,7 @@ extern void shell_unlock(struct shell_def *shell);
 extern void log_lock(struct log_def *log);
 extern void log_unlock(struct log_def *log);
 
-extern void user_init_before_shell();
+extern void user_init_before_shell(void);
 
 void letter_shell_init(void)
 {
@@ -272,7 +286,7 @@ void letter_shell_init(void)
     logRegister(&user_log, &user_shell); // 注册log
 }
 
-void letter_shell_task()
+void letter_shell_task(void)
 {
 #if SHELL_TASK_WHILE == 1
     for (;;)
@@ -294,19 +308,87 @@ void letter_shell_task()
 #endif
 }
 
+#if USE_SHELL_PRINTF
+#include "./xprintf/src/xprintf.c"
+
+static volatile int _byte_count = 0;
+
+static inline void output_byte_buffer(int ch)
+{
+    if (ringbuffer_write_byte(&rb_tx, (uint8_t)ch))
+    {
+        _byte_count++;
+    }
+}
+
 int shell_printf(const char *format, ...)
 {
+    // int len = 0;
+    // char buf[SHELL_TX_BUFFER_SIZE];
+    // va_list args;
+    // va_start(args, format);
+    // len = vsnprintf(buf, sizeof(buf), format, args);
+    // va_end(args);
+
+    // xfprintf
+
     int len = 0;
-    char buf[SHELL_TX_BUFFER_SIZE];
+
+    Shell *shell = &user_shell;
+
+#if SHELL_SUPPORT_END_LINE == 1
+
+    // shellWriteEndLine(&user_shell, buf, strlen(buf));
+    SHELL_LOCK(shell);
+    if (!shell->status.isActive)
+    {
+        shellWriteString(shell, shellText[SHELL_TEXT_CLEAR_LINE]);
+    }
+
+    _byte_count = 0;
+
     va_list args;
     va_start(args, format);
-    len = vsnprintf(buf, sizeof(buf), format, args);
+    xvfprintf(output_byte_buffer, format, args);
     va_end(args);
 
-    shellWriteEndLine(&user_shell, buf, strlen(buf));
+    len = _byte_count;
+
+    if (!shell->status.isActive)
+    {
+        shellWritePrompt(shell, 0);
+        if (shell->parser.length > 0)
+        {
+            shellWriteString(shell, shell->parser.buffer);
+            for (short i = 0; i < shell->parser.length - shell->parser.cursor; i++)
+            {
+                shellWriteByte(shell, '\b');
+            }
+        }
+    }
+
+    SHELL_UNLOCK(shell);
+
+#else
+
+    SHELL_LOCK(shell);
+
+    _byte_count = 0;
+
+    va_list args;
+    va_start(args, format);
+    xvfprintf(output_byte_buffer, format, args);
+    va_end(args);
+
+    len = _byte_count;
+
+    SHELL_UNLOCK(shell);
+
+#endif
 
     return len;
 }
+#endif
 
 //+********************************* 导出一些可能用到的命令或快捷键 **********************************/
 static void logChangeLevel()

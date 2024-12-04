@@ -17,21 +17,17 @@
 #include "usart.h"
 
 // 接收发送方式,不使用阻塞式发送接收,有RTOS可以考虑阻塞发送(可以但没必要),发送和接收的方式是可以组合使用的需自行更改
-enum PLATFORM_MODE_t
-{
-    PLATFORM_MODE_DMA = 0,
-    PLATFORM_MODE_IT,
-    PLATFORM_MODE_POLL
-};
+#define PLATFORM_MODE_DMA 0  // DMA发送与接收
+#define PLATFORM_MODE_IT 1   // 单字节中断发送与接收
+#define PLATFORM_MODE_POLL 2 // 轮询发送与接收
+
 // 使用DMA发送与接收
 #define PLATFORM_MODE PLATFORM_MODE_DMA
 
-enum RTOS_TYPE_t
-{
-    RTOS_NONE = 0, // 无操作系统
-    RTOS_FREERTOS, // FreeRTOS
-    // ... 其他操作系统
-};
+#define RTOS_NONE 0     // 无操作系统
+#define RTOS_FREERTOS 1 // FreeRTOS
+// ... 其他操作系统
+
 // 定义使用的操作系统
 #define RTOS_MODE RTOS_NONE
 
@@ -52,7 +48,7 @@ enum RTOS_TYPE_t
 #define SHELL_ATOMIC_ENTER() __disable_irq()
 #define SHELL_ATOMIC_EXIT() __enable_irq()
 
-#define SHELL_UART_ADDR (&huart1)
+#define SHELL_UART_ADDR (&huart2)
 // clang-format off
 
 #if (PLATFORM_MODE == PLATFORM_MODE_DMA)

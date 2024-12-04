@@ -80,9 +80,9 @@ void log_unlock(struct log_def *log)
 }
 
 // shell使用的硬件初始化,使用cubemx开启串口,然后使能对应的串口中断,DMA发送与接收中断
-void user_init_before_shell()
+void user_init_before_shell(void)
 {
-    // 由于初始化已经由CUBEMX处理好了,这里什么都不需要做,建议开启DMA半满中断(默认开启)
+    // 由于初始化已经由CUBEMX处理好了,这里什么都不需要做
 
 #if (RTOS_MODE == RTOS_FREERTOS)
     _shell_mutex = xSemaphoreCreateMutex();
@@ -167,7 +167,7 @@ int date()
     shellWriteString(shell, str);
 
     // 换算为天`时`分`秒`毫秒
-    snprintf(str, sizeof(str), "current time: %lld天 %02lld时 %02lld分 %02lld秒 %03lld毫秒\r\n", ticks / (1000 * 60 * 60 * 24), (ticks / (1000 * 60 * 60)) % 24, (ticks / (1000 * 60)) % 60, (ticks / 1000) % 60, ticks % 1000);
+    snprintf(str, sizeof(str), "current time: %lld day %02lld hour %02lld min %02lld sec %03lld ms\r\n", ticks / (1000 * 60 * 60 * 24), (ticks / (1000 * 60 * 60)) % 24, (ticks / (1000 * 60)) % 60, (ticks / 1000) % 60, ticks % 1000);
     shellWriteString(shell, str);
 
 #if SHELL_USING_LOCK == 1
