@@ -21,7 +21,7 @@ extern "C" {
 
 #define     SHELL_COMPANION_ID_LOG          -2
 
-#define     LOG_USING_LOCK     0
+#define     LOG_USING_LOCK     1
 #define     LOG_BUFFER_SIZE    256              /**< log输出缓冲大小 */
 #define     LOG_USING_COLOR    1                /**< 是否使用颜色 */
 #define     LOG_MAX_NUMBER     5                /**< 允许注册的最大log对象数量 */

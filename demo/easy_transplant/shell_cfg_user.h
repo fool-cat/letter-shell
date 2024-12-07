@@ -45,7 +45,7 @@
  * @brief 使用锁
  * @note 使用shell锁时，需要对加锁和解锁进行实现
  */
-#define     SHELL_USING_LOCK            0
+#define     SHELL_USING_LOCK            1
 
 #ifndef SHELL_TASK_WHILE
 /**

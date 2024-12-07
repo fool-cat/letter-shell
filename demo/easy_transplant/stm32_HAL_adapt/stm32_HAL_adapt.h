@@ -1,7 +1,7 @@
 /**
  * @file stm32_HAL_adapt.h
  * @author fool_dog (2696652257@qq.com)
- * @brief // 裸机与FreeRTOS的对接方式
+ * @brief // STM32HAL库 裸机与FreeRTOS的对接方式
  * @version 1.0
  * @date 2024-08-08
  *
@@ -12,6 +12,22 @@
 // > 单次包含宏定义
 #ifndef _STM32_HAL_ADAPT_H_
 #define _STM32_HAL_ADAPT_H_
+
+// clang-format off
+/**
+ * 此文件主要是必须对接的宏定义,包括:
+ * #define PLATFORM_TX_WRAP(buffer, len) ...   //> 发送包装宏
+ * #define PLATFORM_RX_WRAP(buffer, len) ...   //> 接收包装宏
+ * #define SHELL_GET_TICK() ...                //> 获取系统时间(ms)
+ * 可选宏:
+ * #define SHELL_WRITE_CAN_BLOCK() ...         //> 判定写入是否可以阻塞
+ * #define WAIT_A_MOMENT() ...                 //> 等待一段时间(可选,默认等待1ms)
+ * #define SHELL_ATOMIC_ENTER() ...            //> 进入原子操作
+ * #define SHELL_ATOMIC_EXIT() ...             //> 退出原子操作
+ * #define SHELL_UART_ADDR ...                 //> 取决于接收和发送宏的实现(可以不用串口)
+ */
+
+// clang-format on
 
 #include "cmsis_compiler.h"
 #include "usart.h"
@@ -38,6 +54,8 @@
 #if (RTOS_MODE == RTOS_NONE)
 #define WAIT_A_MOMENT() HAL_Delay(1) // 等待一段时间,外设跟不上内核填充的速度
 #elif (RTOS_MODE == RTOS_FREERTOS)
+#include "FreeRTOS.h"
+#include "task.h"
 #define WAIT_A_MOMENT() vTaskDelay(1)
 #else
 #warning "请实现自己的等待函数"
@@ -48,7 +66,8 @@
 #define SHELL_ATOMIC_ENTER() __disable_irq()
 #define SHELL_ATOMIC_EXIT() __enable_irq()
 
-#define SHELL_UART_ADDR (&huart2)
+//> 默认使用串口1
+#define SHELL_UART_ADDR (&huart1)
 // clang-format off
 
 #if (PLATFORM_MODE == PLATFORM_MODE_DMA)
@@ -61,7 +80,7 @@
     extern HAL_StatusTypeDef HAL_UART_Transmit_IT(UART_HandleTypeDef *huart, const uint8_t *pData, uint16_t Size);
     extern HAL_StatusTypeDef HAL_UART_Receive_IT(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size);
     #define PLATFORM_TX_WRAP(buffer, len) HAL_UART_Transmit_IT(SHELL_UART_ADDR, (uint8_t *)buffer, len)
-    // 中断接收改成单个字节接收
+    // 中断接收改成单个字节接收,接收回调调用port_rx_end(1);表示接收到一个字节
     #define PLATFORM_RX_WRAP(buffer, len) HAL_UART_Receive_IT(SHELL_UART_ADDR, (uint8_t *)buffer, 1)
 #else
 #error "请实现自己的接收与发送函数对接"

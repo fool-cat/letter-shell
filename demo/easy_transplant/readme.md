@@ -13,6 +13,7 @@
 此处以keil为例
 
 ~~ 将keil编译器切换为AC6,AC5太老了编译又慢,一定要选用AC5导致的编译报错请自行解决 ~~ 已完善AC5编译器支持
+
 1. 将此文件夹下shell_all.c和stm32_HAL_adapt文件夹下stm32_HAL_adapt.c添加编译
 2. 将shell根目录下src文件夹和extensions/shell_enhance和shell_all.h所在文件夹添加头文件包含
 
@@ -32,6 +33,6 @@ OK,编译,烧录完事
 
 # 其他说明
 
-此例程移植同样力求不更改letter shell原仓库文件分布情况
+此例程移植力求不更改letter shell原仓库文件分布情况
 
 shell对接最重要的在于read与write,通常是直接对接到外设上(例如串口),但是外设的速度是远低于内核的运行速度的,于是此例的移植对shell的输入输出都采用ringbuffer缓冲,这样方便解决在中断中调用shell读写(比如log组件)导致中断的的长时间运行,以及stm32_HAL_adapt中实现了支持FreeRTOS的情况下加锁之类的操作
