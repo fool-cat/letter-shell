@@ -181,7 +181,14 @@ static short write_to_ringbuffer(char *data, unsigned short len)
     short total_written = 0;
     short ret = 0;
 
-    while (len > 0)
+    // 不可被阻塞,缓冲区还不能完全写入就直接丢掉,避免数据写入不完全
+    if (!SHELL_WRITE_CAN_BLOCK() && ringbuffer_get_free(&rb_tx) < len)
+    {
+        WRITE_OVER_FLOW_HOOK((char *)data, len);
+        return 0; // 直接丢弃数据,不再写入
+    }
+
+    do
     {
         SHELL_ATOMIC_ENTER();
 
@@ -195,13 +202,6 @@ static short write_to_ringbuffer(char *data, unsigned short len)
         }
         else
         {
-            if (!SHELL_WRITE_CAN_BLOCK())
-            {
-                total_written += ret;
-                WRITE_OVER_FLOW_HOOK((char *)data - total_written, total_written, len);
-                break; // 如果在中断中,直接退出,未写入的数据直接丢弃,避免长时间占用中断
-            }
-
             total_written += ret;
             data += ret;
             len -= ret;
@@ -209,7 +209,7 @@ static short write_to_ringbuffer(char *data, unsigned short len)
 
             WAIT_A_MOMENT(); // 等待一段时间,避免频繁触发发送
         }
-    }
+    } while (len <= 0);
 
     return total_written;
 }
@@ -305,6 +305,11 @@ void letter_shell_task(void)
 #endif
 }
 
+int shell_write(char *data, int len)
+{
+    return (int)(write_to_ringbuffer(data, len));
+}
+
 #if USE_SHELL_PRINTF
 #include "./xprintf/src/xprintf.c"
 
@@ -320,52 +325,10 @@ static inline void output_byte_buffer(int ch)
 
 int shell_printf(const char *format, ...)
 {
-    // int len = 0;
-    // char buf[SHELL_TX_BUFFER_SIZE];
-    // va_list args;
-    // va_start(args, format);
-    // len = vsnprintf(buf, sizeof(buf), format, args);
-    // va_end(args);
-
     int len = 0;
 
     Shell *shell = shellGetCurrent();
 
-#if SHELL_SUPPORT_END_LINE == 1
-
-    // shellWriteEndLine(&user_shell, buf, strlen(buf));
-    SHELL_LOCK(shell);
-    if (!shell->status.isActive)
-    {
-        shellWriteString(shell, shellText[SHELL_TEXT_CLEAR_LINE]);
-    }
-
-    _byte_count = 0;
-
-    va_list args;
-    va_start(args, format);
-    xvfprintf(output_byte_buffer, format, args);
-    va_end(args);
-
-    len = _byte_count;
-
-    if (!shell->status.isActive)
-    {
-        shellWritePrompt(shell, 0);
-        if (shell->parser.length > 0)
-        {
-            shellWriteString(shell, shell->parser.buffer);
-            for (short i = 0; i < shell->parser.length - shell->parser.cursor; i++)
-            {
-                shellWriteByte(shell, '\b');
-            }
-        }
-    }
-
-    SHELL_UNLOCK(shell);
-
-#else
-
     SHELL_LOCK(shell);
 
     _byte_count = 0;
@@ -378,8 +341,6 @@ int shell_printf(const char *format, ...)
     len = _byte_count;
 
     SHELL_UNLOCK(shell);
-
-#endif
 
     return len;
 }

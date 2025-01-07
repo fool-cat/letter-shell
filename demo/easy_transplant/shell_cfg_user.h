@@ -14,12 +14,16 @@
 
 #include <stdint.h>
 
+#ifdef SHELL_CFG_USER
+#include SHELL_CFG_USER
+#endif
+
 // clang-format off
 
 /**
  * @brief shell默认用户
  */
-#define     SHELL_DEFAULT_USER          "letter_shell"
+#define     SHELL_DEFAULT_USER          "letter"
 
 // /**
 //  * @brief 是否使用shell伴生对象,开启后需要支持malloc和free接口

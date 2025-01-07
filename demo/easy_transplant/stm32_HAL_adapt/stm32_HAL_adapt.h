@@ -82,6 +82,13 @@
     #define PLATFORM_TX_WRAP(buffer, len) HAL_UART_Transmit_IT(SHELL_UART_ADDR, (uint8_t *)buffer, len)
     // 中断接收改成单个字节接收,接收回调调用port_rx_end(1);表示接收到一个字节
     #define PLATFORM_RX_WRAP(buffer, len) HAL_UART_Receive_IT(SHELL_UART_ADDR, (uint8_t *)buffer, 1)
+#elif (PLATFORM_MODE == PLATFORM_MODE_POLL)
+#warning "强烈不建议使用阻塞式API发送与接收,建议使用DMA或者中断方式"
+#warning "It is not recommended to use blocking API for sending and receiving. It is recommended to use DMA or interrupt mode"
+    extern HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, const uint8_t *pData, uint16_t Size, uint32_t Timeout);
+    extern HAL_StatusTypeDef HAL_UART_Receive(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+    #define PLATFORM_TX_WRAP(buffer, len) HAL_UART_Transmit(SHELL_UART_ADDR, (uint8_t *)buffer, len, 1000)
+    #define PLATFORM_RX_WRAP(buffer, len) HAL_UART_Receive(SHELL_UART_ADDR, (uint8_t *)buffer, len, 1000)
 #else
 #error "请实现自己的接收与发送函数对接"
 #error "please implement your own receive and send function docking"

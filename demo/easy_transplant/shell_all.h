@@ -31,7 +31,7 @@
 
 // shell 写入溢出的时候可以调用钩子函数进行一些处理
 #ifndef WRITE_OVER_FLOW_HOOK
-#define WRITE_OVER_FLOW_HOOK(data, len_written, len_lose) (void)0
+#define WRITE_OVER_FLOW_HOOK(data, len) (void)0
 #endif
 
 #if !defined(PLATFORM_TX_WRAP) || !defined(PLATFORM_RX_WRAP)
@@ -87,9 +87,12 @@ extern "C"
     // shell任务
     void letter_shell_task(void);
 
+    // shell写入函数,用于向shell写入数据,返回实际写入的字节数
+    int shell_write(char *data, int len);
+
 #define USE_SHELL_PRINTF 1
 #if USE_SHELL_PRINTF
-    // shell尾随printf用于代替标准库的printf,shell_printf使用xprintf的格式化输出,以源码形式添加编译
+    // 代替标准库的printf,shell_printf使用xprintf的格式化输出,以源码形式添加编译
     int shell_printf(const char *format, ...);
 #define SHELL_PRINTF
 #endif
